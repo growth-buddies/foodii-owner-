@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>FOODLE OWNER</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,400&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{colors:{primary:'#D65A2A','primary-dark':'#B9441C',bg:'#F8EBDD',surface:'#FFF9F2','surface-2':'#F3DFCE','txt':'#3B2118','txt-2':'#806A5D',bdr:'#E8D2C0',success:'#4F8A4C',warning:'#D89A32',error:'#C94A3A'},fontFamily:{sans:['DM Sans','sans-serif'],display:['Playfair Display','serif']}}}}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#F8EBDD;font-family:'DM Sans',sans-serif;color:#3B2118}
+#app{max-width:430px;margin:0 auto;height:100%;position:relative;overflow:hidden;background:#F8EBDD}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s ease;will-change:transform,opacity}
+.screen.hidden-right{transform:translateX(100%);opacity:0;pointer-events:none}
+.screen.hidden-left{transform:translateX(-30%);opacity:.5;pointer-events:none}
+.screen.hidden{display:none}
+.screen.no-transition{transition:none}
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;background:#FFF9F2;border-top:1px solid #E8D2C0;display:flex;justify-content:space-around;align-items:center;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:50}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;cursor:pointer;transition:all .2s}
+.nav-item span{font-size:10px;font-weight:500;color:#806A5D;transition:color .2s}
+.nav-item svg{color:#806A5D;transition:color .2s}
+.nav-item.active svg,.nav-item.active span{color:#D65A2A}
+.modal-overlay{position:absolute;inset:0;background:rgba(59,33,24,.45);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal-sheet{background:#FFF9F2;border-radius:20px 20px 0 0;width:100%;max-height:85%;overflow-y:auto;padding:24px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.modal-overlay.show .modal-sheet{transform:translateY(0)}
+.toast-container{position:absolute;top:0;left:0;right:0;z-index:200;padding:12px 16px;pointer-events:none}
+.toast{background:#3B2118;color:#FFF9F2;padding:14px 18px;border-radius:14px;margin-bottom:8px;transform:translateY(-120%);opacity:0;transition:all .4s cubic-bezier(.4,0,.2,1);pointer-events:auto;display:flex;align-items:center;gap:10px;box-shadow:0 8px 30px rgba(59,33,24,.3)}
+.toast.show{transform:translateY(0);opacity:1}
+.chip{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;transition:all .2s;border:1.5px solid #E8D2C0;background:#FFF9F2;color:#806A5D}
+.chip.active{background:#D65A2A;color:#FFF9F2;border-color:#D65A2A}
+.btn-primary{background:#D65A2A;color:#FFF9F2;border:none;padding:14px 24px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;width:100%;transition:all .15s;font-family:inherit}
+.btn-primary:active{transform:scale(.97);background:#B9441C}
+.btn-outline{background:transparent;color:#C94A3A;border:1.5px solid #C94A3A;padding:14px 24px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;width:100%;transition:all .15s;font-family:inherit}
+.btn-outline:active{transform:scale(.97);background:#C94A3A10}
+.btn-secondary{background:#F3DFCE;color:#3B2118;border:none;padding:14px 24px;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;width:100%;transition:all .15s;font-family:inherit}
+.btn-secondary:active{transform:scale(.97);background:#E8D2C0}
+.skeleton{background:linear-gradient(90deg,#F3DFCE 25%,#FFF9F2 50%,#F3DFCE 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:10px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse-dot{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+@keyframes slideDown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.anim-fade-up{animation:fadeInUp .5s ease both}
+.anim-fade{animation:fadeIn .4s ease both}
+.anim-delay-1{animation-delay:.1s}.anim-delay-2{animation-delay:.2s}.anim-delay-3{animation-delay:.3s}.anim-delay-4{animation-delay:.4s}
+.status-badge{padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.status-pending{background:#D89A3220;color:#D89A32}
+.status-accepted{background:#D65A2A20;color:#D65A2A}
+.status-preparing{background:#6366F120;color:#6366F1}
+.status-ready{background:#4F8A4C20;color:#4F8A4C}
+.status-completed{background:#806A5D20;color:#806A5D}
+.status-cancelled{background:#C94A3A20;color:#C94A3A}
+input,select,textarea{font-family:inherit;font-size:15px;width:100%;padding:14px 16px;border:1.5px solid #E8D2C0;border-radius:12px;background:#FFF9F2;color:#3B2118;outline:none;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:#D65A2A}
+textarea{resize:vertical;min-height:80px}
+.toggle{width:48px;height:28px;border-radius:14px;background:#E8D2C0;position:relative;cursor:pointer;transition:background .2s}
+.toggle.on{background:#D65A2A}
+.toggle::after{content:'';position:absolute;width:22px;height:22px;border-radius:11px;background:#FFF9F2;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.toggle.on::after{transform:translateX(20px)}
+.order-timeline{display:flex;align-items:center;gap:0;padding:16px 0}
+.timeline-step{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative}
+.timeline-dot{width:28px;height:28px;border-radius:50%;border:2.5px solid #E8D2C0;background:#FFF9F2;display:flex;align-items:center;justify-content:center;transition:all .3s;z-index:1}
+.timeline-dot.done{background:#D65A2A;border-color:#D65A2A}
+.timeline-dot.done svg{color:#FFF9F2}
+.timeline-dot.current{border-color:#D65A2A;background:#D65A2A20;animation:pulse-dot 2s infinite}
+.timeline-line{position:absolute;top:14px;left:50%;right:-50%;height:2.5px;background:#E8D2C0;z-index:0}
+.timeline-line.done{background:#D65A2A}
+.timeline-label{font-size:10px;font-weight:600;color:#806A5D;text-align:center}
+.timeline-label.done,.timeline-label.current{color:#D65A2A}
+::-webkit-scrollbar{width:0;height:0}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast-root" class="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════
+const COLORS = {
+  primary:'#D65A2A',primaryDark:'#B9441C',bg:'#F8EBDD',surface:'#FFF9F2',
+  surface2:'#F3DFCE',text:'#3B2118',text2:'#806A5D',border:'#E8D2C0',
+  success:'#4F8A4C',warning:'#D89A32',error:'#C94A3A',white:'#FFFFFF'
+};
+
+const ORDER_STATUS = {
+  PENDING:'pending',ACCEPTED:'accepted',PREPARING:'preparing',
+  READY:'ready',COMPLETED:'completed',CANCELLED:'cancelled'
+};
+
+const STATUS_LABELS = {
+  pending:'Pending',accepted:'Accepted',preparing:'Preparing',
+  ready:'Ready',completed:'Completed',cancelled:'Cancelled'
+};
+
+const STATUS_ORDER = ['pending','accepted','preparing','ready','completed'];
+
+const CATEGORIES = ['All','Burgers','Pizza','Wraps','Bowls','Sides','Desserts','Drinks'];
+
+const PREP_TIMES = [10,15,20,25,30];
+
+// ═══════════════════════════════════════════════
+// MOCK DATA
+// ═══════════════════════════════════════════════
+const now = Date.now();
+const min = 60000;
+
+const mockOwner = {
+  id:'owner_1',name:'Rajesh Kumar',email:'rajesh@foodlekitchen.com',
+  phone:'+91 98765 43210',store_id:'store_1'
+};
+
+const mockStore = {
+  id:'store_1',name:'Foodle Kitchen',owner_name:'Rajesh Kumar',
+  phone:'+91 98765 43210',email:'rajesh@foodlekitchen.com',
+  address:'42 MG Road, Koramangala, Bangalore - 560034',
+  category:'Fast Food',opening_time:'10:00',closing_time:'23:00',
+  status:'open',description:'Modern fast food with fresh ingredients',
+  logo:null,cover:null
+};
+
+const mockMenuItems = [
+  {id:'mi_1',name:'Chicken Burger',description:'Juicy chicken patty with fresh veggies and our signature sauce',category:'Burgers',price:149,prep_time:15,available:true,featured:true,image:'https://picsum.photos/seed/ckburger/200/200'},
+  {id:'mi_2',name:'Paneer Wrap',description:'Grilled paneer with mint chutney in a soft tortilla',category:'Wraps',price:129,prep_time:12,available:true,featured:true,image:'https://picsum.photos/seed/paneerwrap/200/200'},
+  {id:'mi_3',name:'Classic Fries',description:'Crispy golden fries with seasoning',category:'Sides',price:99,prep_time:8,available:true,featured:false,image:'https://picsum.photos/seed/fries22/200/200'},
+  {id:'mi_4',name:'Cold Coffee',description:'Chilled blended coffee with cream',category:'Drinks',price:89,prep_time:5,available:true,featured:false,image:'https://picsum.photos/seed/coldcoffee/200/200'},
+  {id:'mi_5',name:'Margherita Pizza',description:'Classic pizza with mozzarella and fresh basil',category:'Pizza',price:249,prep_time:20,available:true,featured:true,image:'https://picsum.photos/seed/margherita/200/200'},
+  {id:'mi_6',name:'Chicken Wings',description:'Spicy fried wings with dip sauce',category:'Sides',price:179,prep_time:15,available:true,featured:false,image:'https://picsum.photos/seed/chkwing/200/200'},
+  {id:'mi_7',name:'Chocolate Shake',description:'Rich chocolate milkshake with whipped cream',category:'Drinks',price:119,prep_time:5,available:false,featured:false,image:'https://picsum.photos/seed/chocshake/200/200'},
+  {id:'mi_8',name:'Caesar Salad',description:'Fresh romaine with caesar dressing and croutons',category:'Bowls',price:159,prep_time:10,available:true,featured:false,image:'https://picsum.photos/seed/caesarsalad/200/200'}
+];
+
+const mockOrders = [
+  {
+    id:'FD1024',customer_id:'cust_1',store_id:'store_1',
+    customer_name:'Rahul Sharma',customer_phone:'+91 87654 32109',
+    order_type:'pickup',status:ORDER_STATUS.PENDING,
+    items:[
+      {menu_item_id:'mi_1',name:'Chicken Burger',qty:2,price:149,customization:'Extra Cheese',image:'https://picsum.photos/seed/ckburger/200/200'},
+      {menu_item_id:'mi_3',name:'Classic Fries',qty:1,price:99,customization:null,image:'https://picsum.photos/seed/fries22/200/200'},
+      {menu_item_id:'mi_4',name:'Cold Coffee',qty:1,price:89,customization:null,image:'https://picsum.photos/seed/coldcoffee/200/200'}
+    ],
+    subtotal:486,tax:24,packaging:21,discount:0,total:531,
+    created_at:now-2*min,accepted_at:null,preparation_minutes:null,
+    estimated_ready_at:null,completed_at:null
+  },
+  {
+    id:'FD1025',customer_id:'cust_2',store_id:'store_1',
+    customer_name:'Priya Patel',customer_phone:'+91 76543 21098',
+    order_type:'delivery',status:ORDER_STATUS.ACCEPTED,
+    items:[
+      {menu_item_id:'mi_2',name:'Paneer Wrap',qty:2,price:129,customization:'No Onion',image:'https://picsum.photos/seed/paneerwrap/200/200'},
+      {menu_item_id:'mi_4',name:'Cold Coffee',qty:1,price:89,customization:'Less Sugar',image:'https://picsum.photos/seed/coldcoffee/200/200'}
+    ],
+    subtotal:347,tax:17,packaging:15,discount:0,total:379,
+    created_at:now-8*min,accepted_at:now-5*min,preparation_minutes:20,
+    estimated_ready_at:now-5*min+20*min,completed_at:null
+  },
+  {
+    id:'FD1026',customer_id:'cust_3',store_id:'store_1',
+    customer_name:'Aman Verma',customer_phone:'+91 65432 10987',
+    order_type:'pickup',status:ORDER_STATUS.PREPARING,
+    items:[
+      {menu_item_id:'mi_5',name:'Margherita Pizza',qty:1,price:249,customization:null,image:'https://picsum.photos/seed/margherita/200/200'},
+      {menu_item_id:'mi_6',name:'Chicken Wings',qty:1,price:179,customization:'Extra Spicy',image:'https://picsum.photos/seed/chkwing/200/200'},
+      {menu_item_id:'mi_3',name:'Classic Fries',qty:1,price:99,customization:null,image:'https://picsum.photos/seed/fries22/200/200'},
+      {menu_item_id:'mi_8',name:'Caesar Salad',qty:1,price:159,customization:null,image:'https://picsum.photos/seed/caesarsalad/200/200'}
+    ],
+    subtotal:686,tax:34,packaging:30,discount:0,total:750,
+    created_at:now-18*min,accepted_at:now-15*min,preparation_minutes:20,
+    estimated_ready_at:now-15*min+20*min,completed_at:null,
+    preparing_started_at:now-12*min
+  },
+  {
+    id:'FD1027',customer_id:'cust_4',store_id:'store_1',
+    customer_name:'Neha Gupta',customer_phone:'+91 54321 09876',
+    order_type:'pickup',status:ORDER_STATUS.READY,
+    items:[
+      {menu_item_id:'mi_1',name:'Chicken Burger',qty:1,price:149,customization:null,image:'https://picsum.photos/seed/ckburger/200/200'},
+      {menu_item_id:'mi_3',name:'Classic Fries',qty:1,price:99,customization:'Large',image:'https://picsum.photos/seed/fries22/200/200'}
+    ],
+    subtotal:248,tax:12,packaging:15,discount:0,total:275,
+    created_at:now-35*min,accepted_at:now-32*min,preparation_minutes:15,
+    estimated_ready_at:now-32*min+15*min,completed_at:null,
+    preparing_started_at:now-30*min,ready_at:now-17*min
+  },
+  {
+    id:'FD1028',customer_id:'cust_5',store_id:'store_1',
+    customer_name:'Arjun Reddy',customer_phone:'+91 43210 98765',
+    order_type:'delivery',status:ORDER_STATUS.COMPLETED,
+    items:[
+      {menu_item_id:'mi_1',name:'Chicken Burger',qty:2,price:149,customization:'Extra Cheese',image:'https://picsum.photos/seed/ckburger/200/200'},
+      {menu_item_id:'mi_4',name:'Cold Coffee',qty:1,price:89,customization:null,image:'https://picsum.photos/seed/coldcoffee/200/200'}
+    ],
+    subtotal:387,tax:19,packaging:18,discount:0,total:424,
+    created_at:now-90*min,accepted_at:now-87*min,preparation_minutes:15,
+    estimated_ready_at:now-87*min+15*min,completed_at:now-60*min,
+    preparing_started_at:now-85*min,ready_at:now-72*min
+  },
+  {
+    id:'FD1029',customer_id:'cust_6',store_id:'store_1',
+    customer_name:'Sneha Iyer',customer_phone:'+91 32109 87654',
+    order_type:'pickup',status:ORDER_STATUS.CANCELLED,
+    items:[
+      {menu_item_id:'mi_7',name:'Chocolate Shake',qty:1,price:119,customization:null,image:'https://picsum.photos/seed/chocshake/200/200'}
+    ],
+    subtotal:119,tax:6,packaging:10,discount:0,total:135,
+    created_at:now-120*min,accepted_at:null,preparation_minutes:null,
+    estimated_ready_at:null,completed_at:null,cancelled_at:now-115*min
+  }
+];
+
+const mockNotifications = [
+  {id:'n1',type:'new_order',title:'New Order Received',body:'Order #FD1024 from Rahul Sharma — ₹531',read:false,created_at:now-2*min},
+  {id:'n2',type:'order_accepted',title:'Order Accepted',body:'You accepted order #FD1025',read:false,created_at:now-5*min},
+  {id:'n3',type:'system',title:'Store Status Updated',body:'Your store is now Open',read:true,created_at:now-30*min},
+  {id:'n4',type:'new_order',title:'New Order Received',body:'Order #FD1026 from Aman Verma — ₹750',read:true,created_at:now-18*min},
+  {id:'n5',type:'order_cancelled',title:'Order Cancelled',body:'Order #FD1029 was cancelled by customer',read:true,created_at:now-115*min}
+];
+
+const mockAnalytics = {
+  today:{orders:24,revenue:8420,avgOrder:350,completed:12,cancelled:2},
+  week:{orders:168,revenue:58400,avgOrder:348,completed:152,cancelled:8},
+  month:{orders:720,revenue:248000,avgOrder:344,completed:680,cancelled:25}
+};
+
+const mockWeeklyRevenue = [
+  {day:'Mon',amount:6800},{day:'Tue',amount:7200},{day:'Wed',amount:8100},
+  {day:'Thu',amount:7500},{day:'Fri',amount:9200},{day:'Sat',amount:11400},{day:'Sun',amount:8420}
+];
+
+const mockTopSelling = [
+  {name:'Chicken Burger',orders:48,revenue:7152},
+  {name:'Paneer Wrap',orders:41,revenue:5289},
+  {name:'Classic Fries',orders:36,revenue:3564},
+  {name:'Cold Coffee',orders:29,revenue:2581}
+];
+
+// ═══════════════════════════════════════════════
+// APPLICATION STATE
+// ═══════════════════════════════════════════════
+const state = {
+  screen:'splash',
+  prevScreen:null,
+  activeTab:'dashboard',
+  owner:{...mockOwner},
+  store:{...mockStore},
+  orders:JSON.parse(JSON.stringify(mockOrders)),
+  menuItems:JSON.parse(JSON.stringify(mockMenuItems)),
+  notifications:[...mockNotifications],
+  selectedOrderId:null,
+  selectedMenuItemId:null,
+  orderFilter:'all',
+  menuCategory:'All',
+  analyticsPeriod:'today',
+  isLoggedIn:false,
+  timerInterval:null,
+  newOrderShown:false
+};
+
+// ═══════════════════════════════════════════════
+// SERVICE LAYER (Supabase-ready mock)
+// ═══════════════════════════════════════════════
+const authService = {
+  async login(email,password){
+    // 未来: const {data,error} = await supabase.auth.signInWithPassword({email,password})
+    return {success:true,user:mockOwner};
+  },
+  async logout(){
+    return {success:true};
+  }
+};
+
+const orderService = {
+  async getOrders(storeId,filter){
+    let orders = state.orders.filter(o=>o.store_id===storeId);
+    if(filter && filter!=='all') orders = orders.filter(o=>o.status===filter);
+    return orders.sort((a,b)=>b.created_at-a.created_at);
+  },
+  async getOrder(orderId){
+    return state.orders.find(o=>o.id===orderId)||null;
+  },
+  async acceptOrder(orderId,prepMinutes){
+    const order = state.orders.find(o=>o.id===orderId);
+    if(!order) return {success:false};
+    const t = Date.now();
+    order.status = ORDER_STATUS.ACCEPTED;
+    order.accepted_at = t;
+    order.preparation_minutes = prepMinutes;
+    order.estimated_ready_at = t + prepMinutes*min;
+    return {success:true,order};
+  },
+  async startPreparing(orderId){
+    const order = state.orders.find(o=>o.id===orderId);
+    if(!order) return {success:false};
+    order.status = ORDER_STATUS.PREPARING;
+    order.preparing_started_at = Date.now();
+    return {success:true,order};
+  },
+  async markReady(orderId){
+    const order = state.orders.find(o=>o.id===orderId);
+    if(!order) return {success:false};
+    order.status = ORDER_STATUS.READY;
+    order.ready_at = Date.now();
+    return {success:true,order};
+  },
+  async completeOrder(orderId){
+    const order = state.orders.find(o=>o.id===orderId);
+    if(!order) return {success:false};
+    order.status = ORDER_STATUS.COMPLETED;
+    order.completed_at = Date.now();
+    return {success:true,order};
+  },
+  async rejectOrder(orderId){
+    const order = state.orders.find(o=>o.id===orderId);
+    if(!order) return {success:false};
+    order.status = ORDER_STATUS.CANCELLED;
+    order.cancelled_at = Date.now();
+    return {success:true,order};
+  },
+  async updateStoreStatus(storeId,status){
+    state.store.status = status;
+    return {success:true};
+  }
+};
+
+const menuService = {
+  async getMenuItems(storeId,category){
+    let items = state.menuItems;
+    if(category && category!=='All') items = items.filter(i=>i.category===category);
+    return items;
+  },
+  async addMenuItem(item){
+    const newId = 'mi_'+(state.menuItems.length+1)+'_'+Date.now();
+    state.menuItems.push({...item,id:newId});
+    return {success:true,id:newId};
+  },
+  async updateMenuItem(id,updates){
+    const idx = state.menuItems.findIndex(i=>i.id===id);
+    if(idx===-1) return {success:false};
+    Object.assign(state.menuItems[idx],updates);
+    return {success:true};
+  },
+  async deleteMenuItem(id){
+    state.menuItems = state.menuItems.filter(i=>i.id!==id);
+    return {success:true};
+  },
+  async toggleAvailability(id){
+    const item = state.menuItems.find(i=>i.id===id);
+    if(!item) return {success:false};
+    item.available = !item.available;
+    return {success:true};
+  }
+};
+
+const notificationService = {
+  async getNotifications(){
+    return state.notifications.sort((a,b)=>b.created_at-a.created_at);
+  },
+  async markRead(id){
+    const n = state.notifications.find(n=>n.id===id);
+    if(n) n.read = true;
+  },
+  async markAllRead(){
+    state.notifications.forEach(n=>n.read=true);
+  },
+  getUnreadCount(){
+    return state.notifications.filter(n=>!n.read).length;
+  }
+};
+
+// ═══════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════
+function formatCurrency(n){return '₹'+n.toLocaleString('en-IN')}
+function timeAgo(ts){
+  const diff = Math.floor((Date.now()-ts)/1000);
+  if(diff<60) return diff+' sec ago';
+  if(diff<3600) return Math.floor(diff/60)+' min ago';
+  if(diff<86400) return Math.floor(diff/3600)+' hr ago';
+  return Math.floor(diff/86400)+' days ago';
+}
+function formatTime(ts){
+  const d=new Date(ts);
+  return d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',hour12:true});
+}
+function getGreeting(){
+  const h=new Date().getHours();
+  if(h<12) return 'Good morning';
+  if(h<17) return 'Good afternoon';
+  return 'Good evening';
+}
+function getRemainingTime(order){
+  if(!order.estimated_ready_at) return null;
+  const rem = order.estimated_ready_at - Date.now();
+  if(rem<=0) return {minutes:0,seconds:0,total:0,expired:true};
+  const minutes = Math.floor(rem/60000);
+  const seconds = Math.floor((rem%60000)/1000);
+  return {minutes,seconds,total:rem,expired:false};
+}
+function formatTimer(rem){
+  if(!rem) return '--:--';
+  const m = String(rem.minutes).padStart(2,'0');
+  const s = String(rem.seconds).padStart(2,'0');
+  return m+':'+s;
+}
+function getOrderStats(){
+  const today = state.orders.filter(o=>{
+    const d=new Date(o.created_at);const n=new Date();
+    return d.toDateString()===n.toDateString() && o.status!==ORDER_STATUS.CANCELLED;
+  });
+  return {
+    total:today.length,
+    pending:today.filter(o=>o.status===ORDER_STATUS.PENDING).length,
+    preparing:today.filter(o=>o.status===ORDER_STATUS.PREPARING).length,
+    completed:today.filter(o=>o.status===ORDER_STATUS.COMPLETED).length
+  };
+}
+function getTodayRevenue(){
+  return state.orders.filter(o=>{
+    const d=new Date(o.created_at);const n=new Date();
+    return d.toDateString()===n.toDateString() && o.status===ORDER_STATUS.COMPLETED;
+  }).reduce((s,o)=>s+o.total,0);
+}
+function icon(name,size=20){
+  return `<i data-lucide="${name}" style="width:${size}px;height:${size}px"></i>`;
+}
+
+// ═══════════════════════════════════════════════
+// TOAST SYSTEM
+// ═══════════════════════════════════════════════
+function showToast(message,type='info'){
+  const root = document.getElementById('toast-root');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  const iconName = type==='success'?'check-circle':type==='error'?'x-circle':'info';
+  toast.innerHTML = `${icon(iconName,20)}<span style="font-size:14px;font-weight:500">${message}</span>`;
+  root.appendChild(toast);
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{toast.classList.add('show')})});
+  setTimeout(()=>{
+    toast.classList.remove('show');
+    setTimeout(()=>toast.remove(),400);
+  },3000);
+}
+
+// ═══════════════════════════════════════════════
+// MODAL SYSTEM
+// ═══════════════════════════════════════════════
+function showModal(content){
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `<div class="modal-overlay" id="modal-overlay"><div class="modal-sheet">${content}</div></div>`;
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{document.getElementById('modal-overlay').classList.add('show')})});
+  lucide.createIcons({nameAttr:'data-lucide'});
+  document.getElementById('modal-overlay').addEventListener('click',e=>{
+    if(e.target.id==='modal-overlay') closeModal();
+  });
+}
+function closeModal(){
+  const overlay = document.getElementById('modal-overlay');
+  if(!overlay) return;
+  overlay.classList.remove('show');
+  setTimeout(()=>{document.getElementById('modal-root').innerHTML=''},300);
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function navigate(screen,opts={}){
+  const app = document.getElementById('app');
+  const prev = app.querySelector('.screen:not(.hidden)');
+  state.prevScreen = state.screen;
+  state.screen = screen;
+  if(opts.orderId) state.selectedOrderId = opts.orderId;
+  if(opts.menuItemId) state.selectedMenuItemId = opts.menuItemId;
+
+  const html = renderScreen(screen);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'screen hidden-right';
+  wrapper.innerHTML = html;
+  wrapper.id = 'screen-'+screen;
+  app.appendChild(wrapper);
+
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      wrapper.classList.remove('hidden-right');
+      if(prev){
+        prev.classList.add('hidden-left');
+        setTimeout(()=>prev.remove(),350);
+      }
+    });
+  });
+
+  lucide.createIcons({nameAttr:'data-lucide'});
+  initScreenLogic(screen);
+}
+
+function switchTab(tab){
+  if(state.activeTab===tab) return;
+  const app = document.getElementById('app');
+  const prev = app.querySelector('.screen');
+  state.activeTab = tab;
+  state.screen = tab;
+
+  const html = renderScreen(tab);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'screen hidden-right no-transition';
+  wrapper.innerHTML = html;
+  wrapper.id = 'screen-'+tab;
+  app.appendChild(wrapper);
+
+  requestAnimationFrame(()=>{
+    wrapper.classList.remove('hidden-right');
+    if(prev) prev.remove();
+  });
+
+  lucide.createIcons({nameAttr:'data-lucide'});
+  initScreenLogic(tab);
+}
+
+function goBack(){
+  const tabScreens = ['dashboard','orders','menu','analytics','profile'];
+  if(tabScreens.includes(state.prevScreen)){
+    switchTab(state.prevScreen);
+  } else {
+    switchTab(state.activeTab);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// COMPONENT RENDERERS
+// ═══════════════════════════════════════════════
+function renderBottomNav(active){
+  const items = [
+    {id:'dashboard',icon:'layout-dashboard',label:'Dashboard'},
+    {id:'orders',icon:'clipboard-list',label:'Orders'},
+    {id:'menu',icon:'utensils-crossed',label:'Menu'},
+    {id:'analytics',icon:'bar-chart-3',label:'Analytics'},
+    {id:'profile',icon:'user',label:'Profile'}
+  ];
+  const unread = notificationService.getUnreadCount();
+  return `<nav class="bottom-nav">${items.map(it=>`
+    <div class="nav-item ${active===it.id?'active':''}" onclick="switchTab('${it.id}')">
+      <div style="position:relative">
+        ${icon(it.icon,22)}
+        ${it.id==='dashboard'&&unread>0?`<div style="position:absolute;top:-4px;right:-6px;width:16px;height:16px;border-radius:8px;background:#C94A3A;color:#FFF9F2;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center">${unread}</div>`:''}
+      </div>
+      <span>${it.label}</span>
+    </div>
+  `).join('')}</nav>`;
+}
+
+function renderStatusBadge(status){
+  return `<span class="status-badge status-${status}">${STATUS_LABELS[status]}</span>`;
+}
+
+function renderOrderCard(order,compact=false){
+  const itemNames = order.items.map(i=>i.name).join(', ');
+  const itemCount = order.items.reduce((s,i)=>s+i.qty,0);
+  if(compact){
+    return `<div onclick="navigate('order-detail',{orderId:'${order.id}'})" class="bg-surface rounded-2xl p-4 mb-3 border border-bdr cursor-pointer" style="box-shadow:0 1px 4px rgba(59,33,24,.06)">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-bold text-sm text-txt">#${order.id}</span>
+        ${renderStatusBadge(order.status)}
+      </div>
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="font-semibold text-sm">${order.customer_name}</div>
+          <div class="text-xs text-txt-2 mt-1">${itemCount} item${itemCount>1?'s':''} · ${timeAgo(order.created_at)}</div>
+        </div>
+        <div class="text-right">
+          <div class="font-bold text-base text-txt">${formatCurrency(order.total)}</div>
+          ${order.status===ORDER_STATUS.PREPARING?`<div class="text-xs font-bold mt-1" style="color:#6366F1" id="timer-card-${order.id}">${formatTimer(getRemainingTime(order))}</div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+  return `<div onclick="navigate('order-detail',{orderId:'${order.id}'})" class="bg-surface rounded-2xl p-4 mb-3 border border-bdr cursor-pointer" style="box-shadow:0 2px 8px rgba(59,33,24,.06)">
+    <div class="flex items-center justify-between mb-3">
+      <span class="font-bold text-txt">#${order.id}</span>
+      ${renderStatusBadge(order.status)}
+    </div>
+    <div class="font-semibold">${order.customer_name}</div>
+    <div class="text-xs text-txt-2 mt-1 mb-1">${itemCount} item${itemCount>1?'s':''}</div>
+    <div class="text-xs text-txt-2 mb-3" style="line-height:1.5">${itemNames}</div>
+    <div class="flex items-center justify-between">
+      <span class="text-xs text-txt-2">${timeAgo(order.created_at)}</span>
+      <div class="flex items-center gap-3">
+        <span class="font-bold text-lg text-txt">${formatCurrency(order.total)}</span>
+        <div class="bg-primary text-white text-xs font-bold px-3 py-2 rounded-xl">View Order</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderOrderTimeline(order){
+  const steps = ['pending','accepted','preparing','ready','completed'];
+  const labels = ['Pending','Accepted','Preparing','Ready','Done'];
+  const icons = ['clock','check','chef-hat','package-check','circle-check-big'];
+  const currentIdx = steps.indexOf(order.status);
+  const isCancelled = order.status===ORDER_STATUS.CANCELLED;
+
+  if(isCancelled){
+    return `<div class="text-center py-4">
+      <div class="inline-flex items-center gap-2 bg-error/10 text-error px-4 py-2 rounded-xl">
+        ${icon('x-circle',18)}<span class="font-bold text-sm">Order Cancelled</span>
+      </div>
+    </div>`;
+  }
+
+  return `<div class="order-timeline">${steps.map((s,i)=>{
+    const done = i < currentIdx;
+    const current = i === currentIdx;
+    const lineDone = i < currentIdx;
+    return `<div class="timeline-step">
+      ${i<steps.length-1?`<div class="timeline-line ${lineDone?'done':''}"></div>`:''}
+      <div class="timeline-dot ${done?'done':''} ${current?'current':''}">
+        ${done?icon(icons[i],14):(current?icon(icons[i],14):'')}
+      </div>
+      <div class="timeline-label ${done?'done':''} ${current?'current':''}">${labels[i]}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function renderPrepTimer(order){
+  if(order.status!==ORDER_STATUS.PREPARING) return '';
+  const rem = getRemainingTime(order);
+  const expired = rem && rem.expired;
+  const color = expired ? '#C94A3A' : (rem && rem.total < 120000 ? '#D89A32' : '#6366F1');
+  return `<div class="bg-surface-2 rounded-2xl p-4 mb-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div style="width:40px;height:40px;border-radius:12px;background:${color}15;display:flex;align-items:center;justify-content:center">
+        ${icon('timer',20)}
+      </div>
+      <div>
+        <div class="text-xs text-txt-2 font-medium">Preparation Time</div>
+        <div class="font-bold text-xl" style="color:${color}" id="timer-detail-${order.id}">${formatTimer(rem)}</div>
+      </div>
+    </div>
+    <div class="text-xs text-txt-2">Est. ${order.preparation_minutes} min</div>
+  </div>`;
+}
+
+function renderEmptyState(iconName,title,subtitle){
+  return `<div class="flex flex-col items-center justify-center py-16 px-8">
+    <div style="width:80px;height:80px;border-radius:24px;background:#F3DFCE;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+      ${icon(iconName,36)}
+    </div>
+    <div class="font-bold text-lg text-txt mb-2">${title}</div>
+    <div class="text-sm text-txt-2 text-center">${subtitle}</div>
+  </div>`;
+}
+
+function renderLoadingSkeleton(){
+  return `<div class="p-5">
+    <div class="skeleton" style="height:24px;width:140px;margin-bottom:20px"></div>
+    <div class="flex gap-3 mb-5">${[1,2,3,4].map(()=>`<div class="skeleton" style="height:80px;flex:1;border-radius:16px"></div>`).join('')}</div>
+    <div class="skeleton" style="height:140px;border-radius:20px;margin-bottom:20px"></div>
+    <div class="skeleton" style="height:20px;width:120px;margin-bottom:12px"></div>
+    ${[1,2,3].map(()=>`<div class="skeleton" style="height:90px;border-radius:16px;margin-bottom:10px"></div>`).join('')}
+  </div>`;
+}
+
+function renderMenuItemCard(item){
+  return `<div class="bg-surface rounded-2xl border border-bdr overflow-hidden mb-3" style="box-shadow:0 1px 4px rgba(59,33,24,.06)">
+    <div class="flex">
+      <img src="${item.image}" alt="${item.name}" class="w-24 h-24 object-cover" style="min-width:96px" onerror="this.style.background='#F3DFCE';this.alt='IMG'">
+      <div class="flex-1 p-3">
+        <div class="flex items-start justify-between mb-1">
+          <div class="font-bold text-sm text-txt flex-1">${item.name}</div>
+          <div class="toggle ${item.available?'on':''}" onclick="event.stopPropagation();toggleAvailability('${item.id}')" style="transform:scale(.75);margin-top:-2px"></div>
+        </div>
+        <div class="text-xs text-txt-2 mb-2">${item.category} · ${item.prep_time} min</div>
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-primary">${formatCurrency(item.price)}</span>
+          <div class="flex gap-2">
+            <button onclick="event.stopPropagation();navigate('menu-edit',{menuItemId:'${item.id}'})" class="p-2 rounded-lg bg-surface-2 border border-bdr cursor-pointer" style="border:none">${icon('pencil',16)}</button>
+            <button onclick="event.stopPropagation();confirmDeleteItem('${item.id}','${item.name}')" class="p-2 rounded-lg bg-error/10 cursor-pointer" style="border:none;color:#C94A3A">${icon('trash-2',16)}</button>
+          </div>
+        </div>
+        ${!item.available?'<div class="text-xs font-semibold text-error mt-1">Currently unavailable</div>':''}
+        ${item.featured?'<div class="text-xs font-semibold text-warning mt-1">Featured</div>':''}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// SCREEN RENDERERS
+// ═══════════════════════════════════════════════
+function renderScreen(screen){
+  switch(screen){
+    case 'splash': return renderSplash();
+    case 'login': return renderLogin();
+    case 'dashboard': return renderDashboard();
+    case 'orders': return renderOrders();
+    case 'order-detail': return renderOrderDetail();
+    case 'menu': return renderMenu();
+    case 'menu-add': return renderMenuAdd();
+    case 'menu-edit': return renderMenuEdit();
+    case 'analytics': return renderAnalytics();
+    case 'profile': return renderProfile();
+    case 'notifications': return renderNotifications();
+    case 'store-settings': return renderStoreSettings();
+    default: return renderDashboard();
+  }
+}
+
+function renderSplash(){
+  return `<div class="screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#F8EBDD">
+    <div class="anim-fade" style="text-align:center">
+      <div style="width:80px;height:80px;border-radius:24px;background:#D65A2A;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 8px 30px rgba(214,90,42,.3)">
+        <span style="color:#FFF9F2;font-family:'Playfair Display',serif;font-size:36px;font-weight:900">F</span>
+      </div>
+      <div class="font-display text-3xl font-black text-txt tracking-tight mb-2" style="font-family:'Playfair Display',serif">FOODLE</div>
+      <div class="text-sm font-bold text-primary tracking-widest uppercase mb-6">Owner</div>
+      <div class="text-sm text-txt-2 anim-fade-up anim-delay-2" style="opacity:0">Manage orders. Serve better.</div>
+    </div>
+    <div style="position:absolute;bottom:60px" class="anim-fade anim-delay-4" >
+      <div class="w-8 h-8 border-2 border-bdr border-t-primary rounded-full" style="animation:spin .8s linear infinite"></div>
+    </div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  </div>`;
+}
+
+function renderLogin(){
+  return `<div class="screen" style="display:flex;flex-direction:column;height:100%;background:#F8EBDD">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 24px">
+      <div class="anim-fade-up">
+        <div style="width:56px;height:56px;border-radius:16px;background:#D65A2A;display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 4px 16px rgba(214,90,42,.25)">
+          <span style="color:#FFF9F2;font-family:'Playfair Display',serif;font-size:26px;font-weight:900">F</span>
+        </div>
+        <h1 class="text-2xl font-bold text-txt mb-1">Welcome back</h1>
+        <p class="text-sm text-txt-2 mb-8">Manage your Foodle store</p>
+      </div>
+      <div class="anim-fade-up anim-delay-1">
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Email</label>
+          <input type="email" id="login-email" placeholder="owner@foodle.com" value="rajesh@foodlekitchen.com">
+        </div>
+        <div class="mb-6">
+          <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Password</label>
+          <input type="password" id="login-password" placeholder="Enter password" value="password123">
+        </div>
+        <button class="btn-primary mb-4" onclick="handleLogin()">Login</button>
+        <div class="text-center">
+          <span class="text-sm text-primary font-semibold cursor-pointer" onclick="showToast('Password reset link sent','success')">Forgot Password?</span>
+        </div>
+      </div>
+    </div>
+    <div class="text-center pb-8 text-xs text-txt-2">Foodle Owner v1.0</div>
+  </div>`;
+}
+
+function renderDashboard(){
+  const stats = getOrderStats();
+  const revenue = getTodayRevenue();
+  const newOrders = state.orders.filter(o=>o.status===ORDER_STATUS.PENDING||o.status===ORDER_STATUS.ACCEPTED).sort((a,b)=>b.created_at-a.created_at).slice(0,3);
+  const isOpen = state.store.status==='open';
+  const unread = notificationService.getUnreadCount();
+
+  return `<div class="screen" style="display:flex;flex-direction:column;height:100%;background:#F8EBDD">
+    <div style="flex:1;overflow-y:auto;padding-bottom:80px">
+      <!-- Header -->
+      <div class="px-5 pt-6 pb-4 anim-fade-up">
+        <div class="flex items-start justify-between mb-1">
+          <div>
+            <div class="text-sm text-txt-2 font-medium">${getGreeting()},</div>
+            <div class="text-xl font-bold text-txt">${state.owner.name.split(' ')[0]}</div>
+            <div class="text-sm text-txt-2 mt-1">${state.store.name}</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div onclick="navigate('notifications')" class="relative p-2 rounded-xl bg-surface border border-bdr cursor-pointer" style="border:none">
+              ${icon('bell',20)}
+              ${unread>0?`<div style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:4px;background:#C94A3A"></div>`:''}
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 flex items-center gap-2 cursor-pointer" onclick="toggleStoreStatus()">
+          <div style="width:10px;height:10px;border-radius:5px;background:${isOpen?'#4F8A4C':'#C94A3A'};${isOpen?'animation:pulse-dot 2s infinite':''}"></div>
+          <span class="text-xs font-bold uppercase tracking-wider" style="color:${isOpen?'#4F8A4C':'#C94A3A'}">${isOpen?'Open':'Closed'}</span>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="px-5 mb-4 anim-fade-up anim-delay-1">
+        <div class="grid grid-cols-4 gap-2">
+          ${[
+            {label:"Today's Orders",value:stats.total,icon:'shopping-bag',color:'#D65A2A'},
+            {label:'Pending',value:stats.pending,icon:'clock',color:'#D89A32'},
+            {label:'Preparing',value:stats.preparing,icon:'chef-hat',color:'#6366F1'},
+            {label:'Completed',value:stats.completed,icon:'circle-check-big',color:'#4F8A4C'}
+          ].map(c=>`<div class="bg-surface rounded-2xl p-3 border border-bdr text-center" style="box-shadow:0 1px 4px rgba(59,33,24,.05)">
+            <div style="width:32px;height:32px;border-radius:10px;background:${c.color}12;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;color:${c.color}">
+              ${icon(c.icon,16)}
+            </div>
+            <div class="text-lg font-bold text-txt">${c.value}</div>
+            <div class="text-[10px] text-txt-2 font-medium mt-1" style="line-height:1.2">${c.label}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Revenue Card -->
+      <div class="px-5 mb-5 anim-fade-up anim-delay-2">
+        <div class="rounded-2xl p-5 border border-bdr" style="background:linear-gradient(135deg,#D65A2A 0%,#B9441C 100%);box-shadow:0 4px 20px rgba(214,90,42,.25)">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-sm font-medium" style="color:rgba(255,249,242,.7)">Today's Revenue</span>
+            ${icon('trending-up',18)}
+          </div>
+          <div class="text-3xl font-black mb-3" style="color:#FFF9F2">${formatCurrency(revenue)}</div>
+          <div class="flex items-center gap-4">
+            <span class="text-xs" style="color:rgba(255,249,242,.6)">Orders: ${stats.total}</span>
+            <span class="text-xs" style="color:rgba(255,249,242,.6)">Avg: ${formatCurrency(stats.total>0?Math.round(revenue/stats.total):0)}</span>
+            <span class="text-xs font-bold" style="color:#A7F3D0">+12.5%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Orders -->
+      <div class="px-5 anim-fade-up anim-delay-3">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-bold text-lg text-txt">New Orders</h2>
+          <span class="text-sm font-semibold text-primary cursor-pointer" onclick="switchTab('orders')">View All</span>
+        </div>
+        ${newOrders.length>0?newOrders.map(o=>renderOrderCard(o,true)).join(''):renderEmptyState('inbox','No new orders','All caught up for now')}
+      </div>
+    </div>
+    ${renderBottomNav('dashboard')}
+  </div>`;
+}
+
+function renderOrders(){
+  const filters = ['all','pending','accepted','preparing','ready','completed','cancelled'];
+  const filtered = state.orders.filter(o=>state.orderFilter==='all'||o.status===state.orderFilter).sort((a,b)=>b.created_at-a.created_at);
+
+  return `<div class="screen" style="display:flex;flex-direction:column;height:100%;background:#F8EBDD">
+    <div style="flex:1;overflow-y:auto;padding-bottom:80px">
+      <div class="px-5 pt-6 pb-3">
+        <h1 class="text-2xl font-bold text-txt mb-4">Orders</h1>
+        <div class="flex gap-2 overflow-x-auto pb-2" style="-webkit-overflow-scrolling:touch;scrollbar-width:none">
+          ${filters.map(f=>`<div class="chip ${state.orderFilter===f?'active':''}" onclick="setOrderFilter('${f}')">${f==='all'?'All':STATUS_LABELS[f]}</div>`).join('')}
+        </div>
+      </div>
+      <div class="px-5">
+        ${filtered.length>0?filtered.map(o=>renderOrderCard(o)).join(''):renderEmptyState('clipboard-list','No orders found','No orders match this filter')}
+      </div>
+    </div>
+    ${renderBottomNav('orders')}
+  </div>`;
+}
+
+function renderOrderDetail(){
+  const order = state.orders.find(o=>o.id===state.selectedOrderId);
+  if(!order) return renderEmptyState('alert-circle','Order not found','This order may have been removed');
+
+  const itemCount = order.items.reduce((s,i)=>s+i.qty,0);
+  const isPending = order.status===ORDER_STATUS.PENDING;
+  const isAccepted = order.status===ORDER_STATUS.ACCEPTED;
+  const isPreparing = order.status===ORDER_STATUS.PREPARING;
+  const isReady = order.status===ORDER_STATUS.READY;
+  const isCompleted = order.status===ORDER_STATUS.COMPLETED;
+  const isCancelled = order.status===ORDER_STATUS.CANCELLED;
+
+  let actionButtons = '';
+  if(isPending){
+    actionButtons = `<div class="flex gap-3 mt-4">
+      <button class="btn-primary flex-1" onclick="showPrepTimeModal('${order.id}')">Accept Order</button>
+      <button class="btn-outline" style="width:auto;padding:14px 20px" onclick="showRejectConfirm('${order.id}')">${icon('x',20)}</button>
+    </div>`;
+  } else if(isAccepted){
+    actionButtons = `<button class="btn-primary mt-4" onclick="handleStartPreparing('${order.id}')">Start Preparing</button>`;
+  } else if(isPreparing){
+    actionButtons = `<button class="btn-primary mt-4" style="background:#4F8A4C" onclick="handleMarkReady('${order.id}')">Mark as Ready</button>`;
+  } else if(isReady){
+    actionButtons = `<button class="btn-primary mt-4" style="background:#3B2118" onclick="handleCompleteOrder('${order.id}')">Complete Order</button>`;
+  }
+
+  return `<div class="screen" style="display:flex;flex-direction:column;height:100%;background:#F8EBDD">
+    <div style="flex:1;overflow-y:auto">
+      <!-- Header -->
+      <div class="flex items-center gap-3 px-5 pt-6 pb-2">
+        <button onclick="goBack()" class="p-2 rounded-xl bg-surface border border-bdr cursor-pointer" style="border:none">${icon('arrow-left',20)}</button>
+        <h1 class="text-lg font-bold text-txt flex-1">Order #${order.id}</h1>
+        ${renderStatusBadge(order.status)}
+      </div>
+
+      <!-- Timeline -->
+      <div class="px-5 mt-2">${renderOrderTimeline(order)}</div>
+
+      <!-- Timer -->
+      <div class="px-5 mt-2">${renderPrepTimer(order)}</div>
+
+      <!-- Customer Info -->
+      <div class="px-5 mt-2">
+        <div class="bg-surface rounded-2xl p-4 border border-bdr" style="box-shadow:0 1px 4px rgba(59,33,24,.05)">
+          <div class="text-xs font-semibold text-txt-2 uppercase tracking-wide mb-3">Customer</div>
+          <div class="flex items-center gap-3 mb-2">
+            <div style="width:40px;height:40px;border-radius:12px;background:#D65A2A15;display:flex;align-items:center;justify-content:center;color:#D65A2A">${icon('user',20)}</div>
+            <div>
+              <div class="font-semibold text-sm">${order.customer_name}</div>
+              <div class="text-xs text-txt-2">${order.customer_phone}</div>
+            </div>
+          </div>
+          <div class="flex gap-4 mt-3">
+            <div class="flex items-center gap-2 text-xs text-txt-2">${icon('clock',14)}${formatTime(order.created_at)}</div>
+            <div class="flex items-center gap-2 text-xs text-txt-2">${icon(order.order_type==='pickup'?'map-pin':'truck',14)}${order.order_type==='pickup'?'Pickup':'Delivery'}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="px-5 mt-4">
+        <div class="text-xs font-semibold text-txt-2 uppercase tracking-wide mb-3">Items (${itemCount})</div>
+        ${order.items.map(item=>`
+          <div class="bg-surface rounded-2xl p-3 mb-2 border border-bdr flex items-center gap-3">
+            <img src="${item.image}" class="w-14 h-14 rounded-xl object-cover" style="min-width:56px" onerror="this.style.background='#F3DFCE'">
+            <div class="flex-1">
+              <div class="font-semibold text-sm">${item.name} <span class="text-txt-2 font-normal">x${item.qty}</span></div>
+              ${item.customization?`<div class="text-xs text-primary mt-1">${item.customization}</div>`:''}
+            </div>
+            <div class="font-bold text-sm text-txt">${formatCurrency(item.price*item.qty)}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Totals -->
+      <div class="px-5 mt-4">
+        <div class="bg-surface rounded-2xl p-4 border border-bdr">
+          <div class="flex justify-between text-sm mb-2"><span class="text-txt-2">Subtotal</span><span>${formatCurrency(order.subtotal)}</span></div>
+          <div class="flex justify-between text-sm mb-2"><span class="text-txt-2">Tax (5%)</span><span>${formatCurrency(order.tax)}</span></div>
+          <div class="flex justify-between text-sm mb-2"><span class="text-txt-2">Packaging</span><span>${formatCurrency(order.packaging)}</span></div>
+          ${order.discount>0?`<div class="flex justify-between text-sm mb-2"><span class="text-txt-2">Discount</span><span class="text-success">-${formatCurrency(order.discount)}</span></div>`:''}
+          <div style="border-top:1.5px solid #E8D2C0;margin-top:8px;padding-top:10px" class="flex justify-between">
+            <span class="font-bold text-base">Total</span>
+            <span class="font-black text-lg text-primary">${formatCurrency(order.total)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="px-5 mt-2 pb-8">${actionButtons}</div>
+    </div>
+  </div>`;
+}
+
+function renderMenu(){
+  const filtered = state.menuItems.filter(i=>state.menuCategory==='All'||i.category===state.menuCategory);
+  return `<div class="screen" style="display:flex;flex-direction:column;height:100%;background:#F8EBDD">
+    <div style="flex:1;overflow-y:auto;padding-bottom:80px">
+      <div class="px-5 pt-6 pb-3">
+        <div class="flex items-center justify-between mb-4">
+          <h1 class="text-2xl font-bold text-txt">Menu</h1>
+          <button onclick="navigate('menu-add')" class="flex items-center gap-2 bg-primary text-white text-sm font-bold px-4 py-2.5 rounded-xl cursor-pointer" style="border:none">
+            ${icon('plus',18)}Add Item
+          </button>
+        </div>
+        <div class="flex gap-2 overflow-x-auto pb-2" style="scrollbar-width:none">
+          ${CATEGORIES.map(c=>`<div class="chip ${state.menuCategory===c?'active':''}" onclick="setMenuCategory('${c}')">${c}</div>`).join('')}
+        </div>
+      </div>
+      <div class="px-5">
+        <div class="text-xs text-txt-2 font-medium mb-3">${filtered.length} item${filtered.length!==1?'s':''}</div>
+        ${filtered.length>0?filtered.map(i=>renderMenuItemCard(i)).join(''):renderEmptyState('utensils-crossed','No items found','Add items to this category')}
+      </div>
+    </div>
+    ${renderBottomNav('menu')}
+  </div>`;
+}
+
+function renderMenuForm(item=null){
+  const isEdit = !!item;
+  const title = isEdit?'Edit Item':'Add Item';
+  return `<div class="screen" style="display:flex;flex-direction:column;height:100%;background:#F8EBDD">
+    <div style="flex:1;overflow-y:auto">
+      <div class="flex items-center gap-3 px-5 pt-6 pb-4">
+        <button onclick="goBack()" class="p-2 rounded-xl bg-surface border border-bdr cursor-pointer" style="border:none">${icon('arrow-left',20)}</button>
+        <h1 class="text-lg font-bold text-txt">${title}</h1>
+      </div>
+      <div class="px-5">
+        <!-- Image -->
+        <div class="mb-4">
+          <div id="menu-img-preview" onclick="document.getElementById('menu-img-input').click()" class="w-full h-40 rounded-2xl border-2 border-dashed border-bdr flex flex-col items-center justify-center cursor-pointer bg-surface overflow-hidden" style="transition:all .2s">
+            ${item?`<img src="${item.image}" class="w-full h-full object-cover">`:`<div class="text-center"><div style="color:#806A5D;margin-bottom:6px">${icon('image-plus',32)}</div><div class="text-sm text-txt-2 font-medium">Tap to add image</div></div>`}
+          </div>
+          <input type="file" id="menu-img-input" accept="image/*" style="display:none" onchange="handleMenuImage(this)">
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Food Name</label>
+          <input type="text" id="mf-name" placeholder="e.g. Chicken Burger" value="${item?item.name:''}">
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Description</label>
+          <textarea id="mf-desc" placeholder="Describe the item...">${item?item.description:''}</textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Category</label>
+            <select id="mf-category">
+              ${CATEGORIES.filter(c=>c!=='All').map(c=>`<option value="${c}" ${item&&item.category===c?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Price (₹)</label>
+            <input type="number" id="mf-price" placeholder="149" value="${item?item.price:''}">
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Preparation Time (min)</label>
+          <input type="number" id="mf-preptime" placeholder="15" value="${item?item.prep_time:''}">
+        </div>
+        <div class="flex items-center justify-between mb-4 bg-surface rounded-2xl p-4 border border-bdr">
+          <div>
+            <div class="font-semibold text-sm">Available</div>
+            <div class="text-xs text-txt-2">Visible to customers</div>
+          </div>
+          <div class="toggle ${!item||item.available?'on':''}" id="mf-available" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="flex items-center justify-between mb-6 bg-surface rounded-2xl p-4 border border-bdr">
+          <div>
+            <div class="font-semibold text-sm">Featured</div>
+            <div class="text-xs text-txt-2">Show in featured section</div>
+          </div>
+          <div class="toggle ${item&&item.featured?'on':''}" id="mf-featured" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <button class="btn-primary mb-8" onclick="${isEdit?`handleEditMenuItem('${item.id}')`:'handleAddMenuItem()'}">${isEdit?'Save Changes':'Add Food'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+function renderMenuAdd(){return renderMenuForm()}
+function renderMenuEdit(){
+  const item = state.menuItems.find(i=>i.id===state.selectedMenuItemId);
+  return renderMenuForm(item||null);
+}
+
+function renderAnalytics(){
+  const period = state.analyticsPeriod;
+  const data = mockAnalytics[period==='today'?'today':period==='7days'?'week':'month'];
+  const periodLabel = period==='today'?'Today':period==='7days'?'Last 7 Days':'Last 30 Days';
+
+  return `<div class="screen" style="display:flex;flex-direction:column;height:100%;background:#F8EBDD">
+    <div style="flex:1;overflow-y:auto;padding-bottom:80px">
+      <div class="px-5 pt-6 pb-3">
+        <h1 class="text-2xl font-bold text-txt mb-4">Analytics</h1>
+        <div class="flex gap-2">
+          ${[{id:'today',label:'Today'},{id:'7days',label:'7 Days'},{id:'30days',label:'30 Days'}].map(p=>`<div class="chip ${state.analyticsPeriod===p.id?'active':''}" onclick="setAnalyticsPeriod('${p.id}')">${p.label}</div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="px-5 mb-4">
+        <div class="grid grid-cols-2 gap-3">
+          ${[
+            {label:'Total Orders',value:data.orders,icon:'shopping-bag',color:'#D65A2A'},
+            {label:'Revenue',value:formatCurrency(data.revenue),icon:'indian-rupee',color:'#4F8A4C'},
+            {label:'Avg Order Value',value:formatCurrency(data.avgOrder),icon:'trending-up',color:'#6366F1'},
+            {label:'Completed',value:data.completed,icon:'circle-check-big',color:'#4F8A4C'}
+          ].map(c=>`<div class="bg-surface rounded-2xl p-4 border border-bdr" style="box-shadow:0 1px 4px rgba(59,33,24,.05)">
+            <div class="flex items-center gap-2 mb-2">
+              <div style="width:28px;height:28px;border-radius:8px;background:${c.color}12;display:flex;align-items:center;justify-content:center;color:${c.color}">${icon(c.icon,15)}</div>
+              <span class="text-xs text-txt-2 font-medium">${c.label}</span>
+            </div>
+            <div class="text-xl font-bold text-txt">${c.value}</div>
+          </div>`).join('')}
+        </div>
+        <div class="bg-surface rounded-2xl p-4 border border-bdr mt-3 flex items-center justify-between" style="box-shadow:0 1px 4px rgba(59,33,24,.05)">
+          <div class="flex items-center gap-2">
+            <div style="width:28px;height:28px;border-radius:8px;background:#C94A3A12;display:flex;align-items:center;justify-content:center;color:#C94A3A">${icon('x-circle',15)}</div>
+            <span class="text-xs text-txt-2 font-medium">Cancelled</span>
+          </div>
+          <div class="text-xl font-bold text-error">${data.cancelled}</div>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="px-5 mb-5">
+        <div class="bg-surface rounded-2xl p-4 border border-bdr" style="box-shadow:0 1px 4px rgba(59,33,24,.05)">
+          <div class="text-sm font-bold text-txt mb-1">Revenue</div>
+          <div class="text-xs text-txt-2 mb-4">${periodLabel}</div>
+          <canvas id="revenue-chart" width="360" height="180" style="width:100%;height:auto"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Selling -->
+      <div class="px-5 mb-6">
+        <div class="text-sm font-bold text-txt mb-3">Top Selling</div>
+        ${mockTopSelling.map((item,i)=>`
+          <div class="bg-surface rounded-2xl p-3 mb-2 border border-bdr flex items-center gap-3" style="box-shadow:0 1px 4px rgba(59,33,24,.05)">
+            <div style="width:32px;height:32px;border-radius:10px;background:${i===0?'#D65A2A':i===1?'#B9441C':i===2?'#D89A32':'#806A5D'}15;display:flex;align-items:center;justify-content:center">
+              <span class="font-bold text-sm" style="color:${i===0?'#D65A2A':i===1?'#B9441C':i===2?'#D89A32':'#806A5D'}">${i+1}</span>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-sm">${item.name}</div>
+              <div class="text-xs text-txt-2">${item.orders} orders · ${formatCurrency(item.revenue)}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ${renderBottomNav('analytics')}
+  </div>`;
+}
+
+function renderProfile(){
+  const isOpen = state.store.status==='open';
+  return `<div class="screen" style="display:flex;flex-direction:column;height:100%;background:#F8EBDD">
+    <div style="flex:1;overflow-y:auto;padding-bottom:80px">
+      <div class="px-5 pt-6 pb-4">
+        <h1 class="text-2xl font-bold text-txt">Profile</h1>
+      </div>
+
+      <!-- Store Card -->
+      <div class="px-5 mb-5">
+        <div class="bg-surface rounded-2xl p-5 border border-bdr" style="box-shadow:0 2px 8px rgba(59,33,24,.06)">
+          <div class="flex items-center gap-4 mb-4">
+            <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#D65A2A,#B9441C);display:flex;align-items:center;justify-content:center">
+              <span style="color:#FFF9F2;font-family:'Playfair Display',serif;font-size:24px;font-weight:900">${state.store.name.charAt(0)}</span>
+            </div>
+            <div>
+              <div class="font-bold text-lg text-txt">${state.store.name}</div>
+              <div class="text-xs text-txt-2">${state.store.category}</div>
+              <div class="flex items-center gap-1.5 mt-1">
+                <div style="width:8px;height:8px;border-radius:4px;background:${isOpen?'#4F8A4C':'#C94A3A'}"></div>
+                <span class="text-xs font-bold" style="color:${isOpen?'#4F8A4C':'#C94A3A'}">${isOpen?'Open':'Closed'}</span>
+              </div>
+            </div>
+          </div>
+          <div class="text-xs text-txt-2 space-y-1.5">
+            <div class="flex items-center gap-2">${icon('map-pin',14)}${state.store.address}</div>
+            <div class="flex items-center gap-2">${icon('phone',14)}${state.store.phone}</div>
+            <div class="flex items-center gap-2">${icon('mail',14)}${state.store.email}</div>
+            <div class="flex items-center gap-2">${icon('clock',14)}${state.store.opening_time} — ${state.store.closing_time}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Owner Info -->
+      <div class="px-5 mb-5">
+        <div class="text-xs font-semibold text-txt-2 uppercase tracking-wide mb-3">Owner</div>
+        <div class="bg-surface rounded-2xl p-4 border border-bdr flex items-center gap-3" style="box-shadow:0 1px 4px rgba(59,33,24,.05)">
+          <div style="width:44px;height:44px;border-radius:14px;background:#F3DFCE;display:flex;align-items:center;justify-content:center;color:#D65A2A;font-weight:800;font-size:16px">${state.owner.name.charAt(0)}</div>
+          <div>
+            <div class="font-semibold text-sm">${state.owner.name}</div>
+            <div class="text-xs text-txt-2">${state.owner.email}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="px-5 mb-6">
+        <div class="text-xs font-semibold text-txt-2 uppercase tracking-wide mb-3">Settings</div>
+        <div class="bg-surface rounded-2xl border border-bdr overflow-hidden" style="box-shadow:0 1px 4px rgba(59,33,24,.05)">
+          ${[
+            {icon:'store',label:'Store Settings',action:"navigate('store-settings')"},
+            {icon:'bell',label:'Notifications',action:"navigate('notifications')",badge:notificationService.getUnreadCount()},
+            {icon:'clock',label:'Business Hours',action:"navigate('store-settings')"},
+            {icon:'help-circle',label:'Help & Support',action:"showToast('Support: support@foodle.app','info')"},
+            {icon:'log-out',label:'Logout',action:'handleLogout()',danger:true}
+          ].map((s,i)=>`
+            <div onclick="${s.action}" class="flex items-center gap-3 px-4 py-3.5 cursor-pointer ${i>0?'border-t border-bdr':''}" style="transition:background .15s" onpointerdown="this.style.background='#F3DFCE'" onpointerup="this.style.background=''" onpointerleave="this.style.background=''">
+              <div style="width:32px;height:32px;border-radius:10px;background:${s.danger?'#C94A3A':'#D65A2A'}10;display:flex;align-items:center;justify-content:center;color:${s.danger?'#C94A3A':'#D65A2A'}">${icon(s.icon,17)}</div>
+              <span class="flex-1 text-sm font-medium ${s.danger?'text-error':''}">${s.label}</span>
+              ${s.badge?`<div style="min-width:20px;height:20px;border-radius:10px;background:#C94A3A;color:#FFF9F2;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 6px">${s.badge}</div>`:''}
+              ${!s.badge?icon('chevron-right',18):''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    ${renderBottomNav('profile')}
+  </div>`;
+}
+
+function renderNotifications(){
+  const notifs = state.notifications.sort((a,b)=>b.created_at-a.created_at);
+  const iconMap = {new_order:'shopping-bag',order_accepted:'check-circle',order_cancelled:'x-circle',system:'info'};
+  const colorMap = {new_order:'#D65A2A',order_accepted:'#4F8A4C',order_cancelled:'#C94A3A',system:'#6366F1'};
+
+  return `<div class="screen" style="display:flex;flex-direction:column;height:100%;background:#F8EBDD">
+    <div style="flex:1;overflow-y:auto">
+      <div class="flex items-center gap-3 px-5 pt-6 pb-2">
+        <button onclick="goBack()" class="p-2 rounded-xl bg-surface border border-bdr cursor-pointer" style="border:none">${icon('arrow-left',20)}</button>
+        <h1 class="text-lg font-bold text-txt flex-1">Notifications</h1>
+        <span class="text-xs font-semibold text-primary cursor-pointer" onclick="handleMarkAllRead()">Mark all read</span>
+      </div>
+      <div class="px-5 mt-3">
+        ${notifs.length>0?notifs.map(n=>`
+          <div class="bg-surface rounded-2xl p-4 mb-2 border border-bdr flex items-start gap-3 ${!n.read?'border-l-4':'border-l-4 border-l-transparent'}" style="${!n.read?`border-left-color:${colorMap[n.type]||'#806A5D'}`:''};box-shadow:0 1px 4px rgba(59,33,24,.05)">
+            <div style="width:36px;height:36px;border-radius:11px;background:${colorMap[n.type]||'#806A5D'}12;display:flex;align-items:center;justify-content:center;color:${colorMap[n.type]||'#806A5D'};flex-shrink:0;margin-top:2px">${icon(iconMap[n.type]||'bell',17)}</div>
+            <div class="flex-1">
+              <div class="font-semibold text-sm ${!n.read?'text-txt':'text-txt-2'}">${n.title}</div>
+              <div class="text-xs text-txt-2 mt-1" style="line-height:1.5">${n.body}</div>
+              <div class="text-[10px] text-txt-2 mt-2 opacity-60">${timeAgo(n.created_at)}</div>
+            </div>
+            ${!n.read?`<div style="width:8px;height:8px;border-radius:4px;background:${colorMap[n.type]||'#D65A2A'};flex-shrink:0;margin-top:6px"></div>`:''}
+          </div>
+        `).join(''):renderEmptyState('bell','You\'re all caught up','No new notifications')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderStoreSettings(){
+  const s = state.store;
+  return `<div class="screen" style="display:flex;flex-direction:column;height:100%;background:#F8EBDD">
+    <div style="flex:1;overflow-y:auto">
+      <div class="flex items-center gap-3 px-5 pt-6 pb-4">
+        <button onclick="goBack()" class="p-2 rounded-xl bg-surface border border-bdr cursor-pointer" style="border:none">${icon('arrow-left',20)}</button>
+        <h1 class="text-lg font-bold text-txt">Store Settings</h1>
+      </div>
+      <div class="px-5">
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Store Name</label>
+          <input type="text" id="ss-name" value="${s.name}">
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Description</label>
+          <textarea id="ss-desc">${s.description}</textarea>
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Category</label>
+          <select id="ss-category">
+            ${['Fast Food','Cafe','Restaurant','Bakery','Cloud Kitchen','Desserts','Beverages'].map(c=>`<option ${s.category===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Address</label>
+          <input type="text" id="ss-address" value="${s.address}">
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Phone</label>
+            <input type="tel" id="ss-phone" value="${s.phone}">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Email</label>
+            <input type="email" id="ss-email" value="${s.email}">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Opening Time</label>
+            <input type="time" id="ss-open" value="${s.opening_time}">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Closing Time</label>
+            <input type="time" id="ss-close" value="${s.closing_time}">
+          </div>
+        </div>
+        <div class="flex items-center justify-between mb-6 bg-surface rounded-2xl p-4 border border-bdr">
+          <div>
+            <div class="font-semibold text-sm">Store Status</div>
+            <div class="text-xs text-txt-2">${s.status==='open'?'Accepting orders':'Not accepting orders'}</div>
+          </div>
+          <div class="toggle ${s.status==='open'?'on':''}" id="ss-status" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <button class="btn-primary mb-8" onclick="handleSaveStoreSettings()">Save Changes</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// SCREEN INIT LOGIC
+// ═══════════════════════════════════════════════
+function initScreenLogic(screen){
+  if(screen==='analytics'){
+    setTimeout(()=>drawRevenueChart(),100);
+  }
+  if(screen==='dashboard' && !state.newOrderShown){
+    setTimeout(()=>{
+      state.newOrderShown = true;
+      showToast('New order #FD1024 received from Rahul Sharma','info');
+    },3000);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// EVENT HANDLERS
+// ═══════════════════════════════════════════════
+async function handleLogin(){
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-password').value;
+  if(!email||!pass){showToast('Please fill in all fields','error');return}
+  const result = await authService.login(email,pass);
+  if(result.success){
+    state.isLoggedIn = true;
+    navigate('dashboard');
+  } else {
+    showToast('Invalid credentials','error');
+  }
+}
+
+function handleLogout(){
+  showModal(`
+    <div class="text-center py-2">
+      <div style="width:56px;height:56px;border-radius:16px;background:#C94A3A12;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#C94A3A">${icon('log-out',24)}</div>
+      <h3 class="font-bold text-lg text-txt mb-2">Logout?</h3>
+      <p class="text-sm text-txt-2 mb-6">Are you sure you want to logout from Foodle Owner?</p>
+      <div class="flex gap-3">
+        <button class="btn-secondary flex-1" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary flex-1" style="background:#C94A3A" onclick="closeModal();state.isLoggedIn=false;navigate('login')">Logout</button>
+      </div>
+    </div>
+  `);
+}
+
+function toggleStoreStatus(){
+  const newStatus = state.store.status==='open'?'closed':'open';
+  orderService.updateStoreStatus(state.store.id,newStatus);
+  switchTab('dashboard');
+  showToast(`Store is now ${newStatus==='open'?'Open':'Closed'}`,newStatus==='open'?'success':'info');
+}
+
+function setOrderFilter(filter){
+  state.orderFilter = filter;
+  switchTab('orders');
+}
+
+function setMenuCategory(cat){
+  state.menuCategory = cat;
+  switchTab('menu');
+}
+
+function setAnalyticsPeriod(p){
+  state.analyticsPeriod = p;
+  switchTab('analytics');
+}
+
+function showPrepTimeModal(orderId){
+  showModal(`
+    <div>
+      <h3 class="font-bold text-lg text-txt mb-1">Set preparation time</h3>
+      <p class="text-sm text-txt-2 mb-5">How long will this order take to prepare?</p>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        ${PREP_TIMES.map(t=>`<button class="prep-time-btn bg-surface-2 border-2 border-bdr rounded-xl py-3 font-bold text-txt cursor-pointer transition-all" style="border:none" onclick="selectPrepTime(this,${t})" data-time="${t}">${t} min</button>`).join('')}
+      </div>
+      <div class="mb-5">
+        <label class="block text-xs font-semibold text-txt-2 mb-2 uppercase tracking-wide">Custom (minutes)</label>
+        <input type="number" id="custom-prep-time" placeholder="Enter minutes" min="1" max="120" oninput="clearPrepTimeSelection()">
+      </div>
+      <button class="btn-primary" onclick="handleAcceptOrder('${orderId}')">Confirm Order</button>
+    </div>
+  `);
+}
+
+function selectPrepTime(btn,time){
+  document.querySelectorAll('.prep-time-btn').forEach(b=>{
+    b.style.background='#F3DFCE';
+    b.style.borderColor='#E8D2C0';
+    b.style.color='#3B2118';
+  });
+  btn.style.background='#D65A2A';
+  btn.style.borderColor='#D65A2A';
+  btn.style.color='#FFF9F2';
+  btn.dataset.selected = 'true';
+  document.getElementById('custom-prep-time').value = '';
+}
+
+function clearPrepTimeSelection(){
+  document.querySelectorAll('.prep-time-btn').forEach(b=>{
+    b.style.background='#F3DFCE';
+    b.style.borderColor='#E8D2C0';
+    b.style.color='#3B2118';
+    b.dataset.selected = '';
+  });
+}
+
+function getSelectedPrepTime(){
+  const custom = document.getElementById('custom-prep-time').value;
+  if(custom && parseInt(custom)>0) return parseInt(custom);
+  const selected = document.querySelector('.prep-time-btn[data-selected="true"]');
+  if(selected) return parseInt(selected.dataset.time);
+  return null;
+}
+
+async function handleAcceptOrder(orderId){
+  const prepTime = getSelectedPrepTime();
+  if(!prepTime){showToast('Please select preparation time','error');return}
+  await orderService.acceptOrder(orderId,prepTime);
+  closeModal();
+  showToast('Order accepted','success');
+  navigate('order-detail',{orderId});
+}
+
+function showRejectConfirm(orderId){
+  showModal(`
+    <div class="text-center py-2">
+      <div style="width:56px;height:56px;border-radius:16px;background:#C94A3A12;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#C94A3A">${icon('x-circle',24)}</div>
+      <h3 class="font-bold text-lg text-txt mb-2">Reject this order?</h3>
+      <p class="text-sm text-txt-2 mb-6">The customer will be notified that their order was rejected.</p>
+      <div class="flex gap-3">
+        <button class="btn-secondary flex-1" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary flex-1" style="background:#C94A3A" onclick="handleRejectOrder('${orderId}')">Reject Order</button>
+      </div>
+    </div>
+  `);
+}
+
+async function handleRejectOrder(orderId){
+  await orderService.rejectOrder(orderId);
+  closeModal();
+  showToast('Order rejected','error');
+  navigate('order-detail',{orderId});
+}
+
+async function handleStartPreparing(orderId){
+  await orderService.startPreparing(orderId);
+  showToast('Preparation started','success');
+  navigate('order-detail',{orderId});
+}
+
+async function handleMarkReady(orderId){
+  await orderService.markReady(orderId);
+  showToast('Order is ready for pickup','success');
+  navigate('order-detail',{orderId});
+}
+
+async function handleCompleteOrder(orderId){
+  await orderService.completeOrder(orderId);
+  showToast('Order completed','success');
+  navigate('order-detail',{orderId});
+}
+
+async function toggleAvailability(itemId){
+  await menuService.toggleAvailability(itemId);
+  const item = state.menuItems.find(i=>i.id===itemId);
+  showToast(`${item.name} is now ${item.available?'available':'unavailable'}`,item.available?'success':'info');
+  switchTab('menu');
+}
+
+function confirmDeleteItem(id,name){
+  showModal(`
+    <div class="text-center py-2">
+      <div style="width:56px;height:56px;border-radius:16px;background:#C94A3A12;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#C94A3A">${icon('trash-2',24)}</div>
+      <h3 class="font-bold text-lg text-txt mb-2">Delete ${name}?</h3>
+      <p class="text-sm text-txt-2 mb-6">This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button class="btn-secondary flex-1" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary flex-1" style="background:#C94A3A" onclick="handleDeleteItem('${id}')">Delete</button>
+      </div>
+    </div>
+  `);
+}
+
+async function handleDeleteItem(id){
+  await menuService.deleteMenuItem(id);
+  closeModal();
+  showToast('Item deleted','success');
+  switchTab('menu');
+}
+
+function handleMenuImage(input){
+  if(input.files&&input.files[0]){
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const preview = document.getElementById('menu-img-preview');
+      preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+async function handleAddMenuItem(){
+  const name = document.getElementById('mf-name').value.trim();
+  const desc = document.getElementById('mf-desc').value.trim();
+  const category = document.getElementById('mf-category').value;
+  const price = parseInt(document.getElementById('mf-price').value);
+  const prepTime = parseInt(document.getElementById('mf-preptime').value);
+  const available = document.getElementById('mf-available').classList.contains('on');
+  const featured = document.getElementById('mf-featured').classList.contains('on');
+
+  if(!name){showToast('Please enter food name','error');return}
+  if(!price||price<=0){showToast('Please enter a valid price','error');return}
+  if(!prepTime||prepTime<=0){showToast('Please enter preparation time','error');return}
+
+  const preview = document.getElementById('menu-img-preview').querySelector('img');
+  const image = preview?preview.src:`https://picsum.photos/seed/${name.replace(/\s/g,'')}/200/200`;
+
+  await menuService.addMenuItem({name,description:desc,category,price,prep_time:prepTime,available,featured,image});
+  showToast(`${name} added to menu`,'success');
+  goBack();
+}
+
+async function handleEditMenuItem(id){
+  const name = document.getElementById('mf-name').value.trim();
+  const desc = document.getElementById('mf-desc').value.trim();
+  const category = document.getElementById('mf-category').value;
+  const price = parseInt(document.getElementById('mf-price').value);
+  const prepTime = parseInt(document.getElementById('mf-preptime').value);
+  const available = document.getElementById('mf-available').classList.contains('on');
+  const featured = document.getElementById('mf-featured').classList.contains('on');
+
+  if(!name){showToast('Please enter food name','error');return}
+  if(!price||price<=0){showToast('Please enter a valid price','error');return}
+
+  const preview = document.getElementById('menu-img-preview').querySelector('img');
+  const updates = {name,description:desc,category,price,prep_time:prepTime||15,available,featured};
+  if(preview) updates.image = preview.src;
+
+  await menuService.updateMenuItem(id,updates);
+  showToast(`${name} updated`,'success');
+  goBack();
+}
+
+function handleSaveStoreSettings(){
+  state.store.name = document.getElementById('ss-name').value;
+  state.store.description = document.getElementById('ss-desc').value;
+  state.store.category = document.getElementById('ss-category').value;
+  state.store.address = document.getElementById('ss-address').value;
+  state.store.phone = document.getElementById('ss-phone').value;
+  state.store.email = document.getElementById('ss-email').value;
+  state.store.opening_time = document.getElementById('ss-open').value;
+  state.store.closing_time = document.getElementById('ss-close').value;
+  state.store.status = document.getElementById('ss-status').classList.contains('on')?'open':'closed';
+  showToast('Store settings saved','success');
+  goBack();
+}
+
+async function handleMarkAllRead(){
+  await notificationService.markAllRead();
+  switchTab('profile');
+  showToast('All notifications marked as read','success');
+}
+
+// ═══════════════════════════════════════════════
+// CHART RENDERING
+// ═══════════════════════════════════════════════
+function drawRevenueChart(){
+  const canvas = document.getElementById('revenue-chart');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio||1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width*dpr;
+  canvas.height = rect.height*dpr;
+  ctx.scale(dpr,dpr);
+  const w = rect.width;
+  const h = rect.height;
+  const data = mockWeeklyRevenue;
+  const maxVal = Math.max(...data.map(d=>d.amount))*1.15;
+  const barWidth = Math.max(1,(w-60)/data.length*0.5);
+  const gap = (w-40)/data.length;
+  const chartH = h-30;
+
+  // Grid lines
+  ctx.strokeStyle='#E8D2C040';
+  ctx.lineWidth=1;
+  for(let i=0;i<4;i++){
+    const y = 10 + (chartH-10)/3*i;
+    ctx.beginPath();ctx.moveTo(30,y);ctx.lineTo(w-10,y);ctx.stroke();
+  }
+
+  // Bars
+  data.forEach((d,i)=>{
+    const x = 35 + gap*i + gap/2 - barWidth/2;
+    const barH = Math.max(2,(d.amount/maxVal)*(chartH-20));
+    const y = chartH - barH;
+
+    // Bar gradient
+    const grad = ctx.createLinearGradient(x,y,x,chartH);
+    grad.addColorStop(0,'#D65A2A');
+    grad.addColorStop(1,'#B9441C');
+    ctx.fillStyle = grad;
+
+    // Rounded top
+    const r = Math.min(barWidth/2,6);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.lineTo(x+barWidth-r,y);
+    ctx.quadraticCurveTo(x+barWidth,y,x+barWidth,y+r);
+    ctx.lineTo(x+barWidth,chartH);
+    ctx.lineTo(x,chartH);
+    ctx.lineTo(x,y+r);
+    ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle='#806A5D';
+    ctx.font='600 10px DM Sans';
+    ctx.textAlign='center';
+    ctx.fillText(d.day,x+barWidth/2,h-4);
+
+    // Value
+    ctx.fillStyle='#3B2118';
+    ctx.font='700 9px DM Sans';
+    ctx.fillText('₹'+(d.amount/1000).toFixed(1)+'k',x+barWidth/2,y-6);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// TIMER SYSTEM
+// ═══════════════════════════════════════════════
+function startTimerSystem(){
+  if(state.timerInterval) clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(()=>{
+    let needsUpdate = false;
+    state.orders.forEach(o=>{
+      if(o.status===ORDER_STATUS.PREPARING){
+        const el1 = document.getElementById('timer-detail-'+o.id);
+        const el2 = document.getElementById('timer-card-'+o.id);
+        const rem = getRemainingTime(o);
+        if(el1){
+          el1.textContent = formatTimer(rem);
+          if(rem && rem.expired) el1.style.color='#C94A3A';
+          else if(rem && rem.total < 120000) el1.style.color='#D89A32';
+          else el1.style.color='#6366F1';
+        }
+        if(el2) el2.textContent = formatTimer(rem);
+        needsUpdate = true;
+      }
+    });
+  },1000);
+}
+
+// ═══════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════
+function init(){
+  const app = document.getElementById('app');
+  app.innerHTML = renderSplash();
+  lucide.createIcons({nameAttr:'data-lucide'});
+
+  // Splash → Login transition
+  setTimeout(()=>{
+    if(!state.isLoggedIn){
+      navigate('login');
+    }
+  },2500);
+
+  // Start timer system
+  startTimerSystem();
+}
+
+// Go
+init();
+</script>
+</body>
+</html>
